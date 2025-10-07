@@ -1,0 +1,16 @@
+date,merchant,amount,type
+2024-04-01,Local Store,1000,POS
+2024-04-02,Online Shop,5000,Online
+2024-04-03,Suspicious Vendor,50000,Online
+2024-04-04,Restaurant,2500,POS
+2024-04-05,Unknown Merchant,100000,POS
+2024-04-06,Grocery Store,1500,POS
+2024-04-07,Fake Store,75000,Online
+2024-04-08,Coffee Shop,500,POS
+2024-04-09,Scam Website,200000,Online
+2024-04-10,Bookstore,3000,POS
+2024-04-11,Fraudulent Shop,150000,Online
+2024-04-12,Pharmacy,1200,POS
+2024-04-13,Suspicious Online Store,80000,Online
+2024-04-14,Gas Station,2000,POS
+2024-04-15,Unknown Vendor,300000,Online

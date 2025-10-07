@@ -1,0 +1,11 @@
+date,merchant,amount,type
+2024-10-01,Amazon India,2500,Online
+2024-10-02,Flipkart,1200,Online
+2024-10-03,Unknown Merchant,75000,Online
+2024-10-04,Zomato,800,Online
+2024-10-05,Suspicious Store,45000,POS
+2024-10-06,Uber,350,Online
+2024-10-07,Swiggy,650,Online
+2024-10-08,Test Merchant,95000,Online
+2024-10-09,Big Bazaar,5000,POS
+2024-10-10,International Store,60000,Online

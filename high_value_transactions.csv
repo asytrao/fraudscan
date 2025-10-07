@@ -1,0 +1,16 @@
+date,merchant,amount,type
+2024-03-01,Apple Store,65000,Online
+2024-03-02,Samsung Store,45000,POS
+2024-03-03,Unknown Luxury Store,150000,Online
+2024-03-04,Dell India,80000,Online
+2024-03-05,Fraudulent Jewelers,500000,POS
+2024-03-06,Croma Electronics,35000,POS
+2024-03-07,Suspicious Gold Shop,750000,Online
+2024-03-08,HP Store,55000,Online
+2024-03-09,Fake Diamond Store,1000000,POS
+2024-03-10,Lenovo India,42000,Online
+2024-03-11,Scam Luxury Goods,850000,Online
+2024-03-12,Vijay Sales,28000,POS
+2024-03-13,Unknown High-End Store,600000,Online
+2024-03-14,Sony Center,38000,POS
+2024-03-15,Fraudulent Car Dealer,2000000,Online

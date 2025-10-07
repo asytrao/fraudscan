@@ -1,0 +1,16 @@
+date,merchant,amount,type
+2024-05-01,Amazon US,3500,Online
+2024-05-02,eBay International,1200,Online
+2024-05-03,Unknown Foreign Store,85000,Online
+2024-05-04,Netflix US,799,Online
+2024-05-05,Suspicious International,120000,Online
+2024-05-06,Apple Store US,45000,Online
+2024-05-07,Fake Overseas Vendor,200000,Online
+2024-05-08,PayPal International,2800,Online
+2024-05-09,Fraudulent Foreign Shop,350000,Online
+2024-05-10,Google Play US,299,Online
+2024-05-11,Scam International Store,180000,Online
+2024-05-12,Microsoft Store,5600,Online
+2024-05-13,Unknown Overseas Merchant,95000,Online
+2024-05-14,Spotify International,149,Online
+2024-05-15,Suspicious Foreign Payment,500000,Online

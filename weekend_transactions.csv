@@ -1,0 +1,17 @@
+date,merchant,amount,type
+2024-02-03,Netflix,799,Online
+2024-02-04,Unknown Store,75000,POS
+2024-02-10,Domino's Pizza,850,Online
+2024-02-11,Suspicious Vendor,100000,Online
+2024-02-17,Spotify,149,Online
+2024-02-18,Fake Jewelry,180000,POS
+2024-02-24,Grocery Store,1200,POS
+2024-02-25,Scammer Inc,250000,Online
+2024-03-02,Coffee Shop,180,POS
+2024-03-03,Fraudulent Electronics,90000,Online
+2024-03-09,Petrol Pump,3500,POS
+2024-03-10,Unknown Online Store,120000,Online
+2024-03-16,Restaurant,2200,POS
+2024-03-17,Suspicious Payment,300000,Online
+2024-03-23,Pharmacy,650,POS
+2024-03-24,Fake Travel Agency,175000,Online

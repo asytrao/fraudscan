@@ -1,0 +1,17 @@
+date,merchant,amount,type
+2024-01-15,Amazon India,1250,Online
+2024-01-16,Flipkart,890,Online
+2024-01-17,Unknown Merchant,85000,Online
+2024-01-18,Swiggy,450,Online
+2024-01-19,Suspicious Store,120000,POS
+2024-01-20,McDonald's,320,POS
+2024-01-21,Zomato,680,Online
+2024-01-22,Fake Electronics,95000,Online
+2024-01-23,Starbucks,280,POS
+2024-01-24,Uber,150,Online
+2024-01-25,Fraudulent Shop,200000,POS
+2024-01-26,Big Bazaar,2100,POS
+2024-01-27,BookMyShow,500,Online
+2024-01-28,Scam Merchant,150000,Online
+2024-01-29,Reliance Digital,15000,POS
+2024-01-30,Myntra,3200,Online

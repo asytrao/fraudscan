@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudScan Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar h1 {
+            font-size: 1.8rem;
+            font-weight: 300;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 3rem;
+            margin: 1rem 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f8f9ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtext {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .upload-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+        }
+
+        /* Transaction Table */
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .table-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+        }
+
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .transactions-table th {
+            background: #f8f9fa;
+            color: #333;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 500;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .transactions-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .transactions-table tr:hover {
+            background: #f8f9fa;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+
+        .fraud-row {
+            background: #fff5f5 !important;
+            border-left: 4px solid #dc3545;
+        }
+
+        .legit-row {
+            background: #f8fff9 !important;
+            border-left: 4px solid #28a745;
+        }
+
+        .status-fraud {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .status-legit {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .chart-title {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            text-align: center;
+            position: relative;
+        }
+
+        .chart-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .summary-card.fraud {
+            border-left-color: #dc3545;
+        }
+
+        .summary-card.legit {
+            border-left-color: #28a745;
+        }
+
+        .summary-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-number.fraud {
+            color: #dc3545;
+        }
+
+        .summary-number.legit {
+            color: #28a745;
+        }
+
+        .summary-number.total {
+            color: #667eea;
+        }
+
+        .summary-label {
+            color: #666;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        /* Risk badges */
+        .risk-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            display: inline-block;
+            min-width: 60px;
+        }
+
+        .risk-low {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+
+        .risk-medium {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .risk-high {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+
+        /* Chart container heights */
+        .chart-container canvas {
+            height: 300px !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .navbar {
+                padding: 1rem;
+            }
+            
+            .navbar h1 {
+                font-size: 1.5rem;
+            }
+            
+            .upload-area {
+                padding: 2rem 1rem;
+            }
+            
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <h1>FraudScan</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <h2 style="color: #333; margin-bottom: 1rem; font-weight: 300;">Upload Transaction Data</h2>
+            <p style="color: #666; margin-bottom: 2rem;">Upload your transaction file to analyze for fraudulent activities</p>
+            
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Click to upload or drag and drop</div>
+                <div class="upload-subtext">Supports .xlsx, .csv, .pdf files</div>
+            </div>
+            
+            <input type="file" id="fileInput" class="file-input" accept=".xlsx,.csv,.pdf" onchange="handleFileSelect(event)">
+            
+            <button class="upload-btn" id="uploadBtn" onclick="uploadFile()" disabled>
+                Upload File
+            </button>
+            
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Uploading...</div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+            <!-- Summary Cards -->
+            <div class="summary-cards" id="summaryCards">
+                <div class="summary-card total">
+                    <div class="summary-number total" id="totalCount">0</div>
+                    <div class="summary-label">Total Transactions</div>
+                </div>
+                <div class="summary-card legit">
+                    <div class="summary-number legit" id="legitCount">0</div>
+                    <div class="summary-label">Legitimate</div>
+                </div>
+                <div class="summary-card fraud">
+                    <div class="summary-number fraud" id="fraudCount">0</div>
+                    <div class="summary-label">Fraudulent</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number total" id="fraudPercentage">0%</div>
+                    <div class="summary-label">Fraud Rate</div>
+                </div>
+            </div>
+
+            <!-- Transaction Table -->
+            <div class="table-container">
+                <h3 class="table-title">Transaction Analysis Results</h3>
+                <table class="transactions-table" id="transactionsTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Merchant</th>
+                            <th>Amount (₹)</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Risk Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h3 class="chart-title">Fraud vs Legitimate</h3>
+                    <canvas id="pieChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 class="chart-title">Transaction Amounts</h3>
+                    <canvas id="lineChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 class="chart-title">Top Merchants by Amount</h3>
+                    <canvas id="barChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 class="chart-title">Risk Level Distribution</h3>
+                    <canvas id="riskChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let transactionsData = [];
+
+        // Chart instances
+        let pieChartInstance = null;
+        let lineChartInstance = null;
+        let barChartInstance = null;
+        let riskChartInstance = null;
+
+        // Check authentication on page load
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('fraudscan_token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Load demo data by default
+            loadDemoData();
+        });
+
+        // Load demo data
+        async function loadDemoData() {
+            try {
+                const response = await fetch('/api/demo-data');
+                const data = await response.json();
+                
+                if (data.success) {
+                    transactionsData = data.transactions;
+                    displayResults();
+                }
+            } catch (error) {
+                console.error('Error loading demo data:', error);
+            }
+        }
+
+        // File selection handler
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('uploadBtn').disabled = false;
+                document.querySelector('.upload-text').textContent = `Selected: ${file.name}`;
+                document.querySelector('.upload-subtext').textContent = `Size: ${(file.size / 1024 / 1024).toFixed(2)} MB`;
+            }
+        }
+
+        // Upload file function
+        async function uploadFile() {
+            if (!selectedFile) return;
+
+            const uploadBtn = document.getElementById('uploadBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            uploadBtn.disabled = true;
+            progressContainer.style.display = 'block';
+
+            // Simulate upload progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressFill.style.width = progress + '%';
+                progressText.textContent = `Uploading... ${Math.round(progress)}%`;
+            }, 200);
+
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+
+                const token = localStorage.getItem('fraudscan_token');
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                clearInterval(interval);
+                progressFill.style.width = '100%';
+                progressText.textContent = 'Processing...';
+
+                if (response.ok) {
+                    const data = await response.json();
+                    transactionsData = data.transactions;
+                    
+                    setTimeout(() => {
+                        displayResults();
+                        progressContainer.style.display = 'none';
+                        uploadBtn.disabled = false;
+                        uploadBtn.textContent = 'Upload Another File';
+                    }, 1000);
+                } else {
+                    if (response.status === 401) {
+                        localStorage.removeItem('fraudscan_token');
+                        localStorage.removeItem('fraudscan_user');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    let message = 'Upload failed';
+                    try {
+                        const err = await response.json();
+                        if (err && err.error) message = err.error;
+                    } catch {}
+                    throw new Error(message);
+                }
+            } catch (error) {
+                clearInterval(interval);
+                progressContainer.style.display = 'none';
+                uploadBtn.disabled = false;
+                alert(`Upload failed: ${error.message}`);
+                console.error('Upload error:', error);
+            }
+        }
+
+        // Display results
+        function displayResults() {
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.style.display = 'block';
+            resultsSection.classList.add('fade-in');
+
+            // Update summary cards
+            updateSummaryCards();
+            
+            // Populate table
+            populateTable();
+            
+            // Create charts
+            createPieChart();
+            createLineChart();
+            createBarChart();
+            createRiskChart();
+        }
+
+        // Update summary cards
+        function updateSummaryCards() {
+            const total = transactionsData.length;
+            const fraud = transactionsData.filter(t => t.status === 'Fraud').length;
+            const legit = transactionsData.filter(t => t.status === 'Legit').length;
+            const fraudRate = total > 0 ? ((fraud / total) * 100).toFixed(1) : 0;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('fraudCount').textContent = fraud;
+            document.getElementById('legitCount').textContent = legit;
+            document.getElementById('fraudPercentage').textContent = fraudRate + '%';
+        }
+
+        // Populate transaction table
+        function populateTable() {
+            const tbody = document.getElementById('transactionsBody');
+            tbody.innerHTML = '';
+
+            transactionsData.forEach(transaction => {
+                const row = document.createElement('tr');
+                row.className = transaction.status === 'Fraud' ? 'fraud-row' : 'legit-row';
+                
+                const riskScore = transaction.fraudScore || 0;
+                const riskBadge = riskScore >= 75 ? 'High' : riskScore >= 50 ? 'Medium' : 'Low';
+                
+                row.innerHTML = `
+                    <td>${transaction.date}</td>
+                    <td>${transaction.merchant}</td>
+                    <td>₹${transaction.amount.toLocaleString()}</td>
+                    <td>${transaction.type}</td>
+                    <td class="${transaction.status === 'Fraud' ? 'status-fraud' : 'status-legit'}">
+                        ${transaction.status}
+                    </td>
+                    <td><span class="risk-badge risk-${riskBadge.toLowerCase()}">${riskScore}/100</span></td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Create pie chart
+        function createPieChart() {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            
+            const fraudCount = transactionsData.filter(t => t.status === 'Fraud').length;
+            const legitCount = transactionsData.filter(t => t.status === 'Legit').length;
+            
+            if (pieChartInstance) pieChartInstance.destroy();
+            
+            pieChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Fraudulent', 'Legitimate'],
+                    datasets: [{
+                        data: [fraudCount, legitCount],
+                        backgroundColor: [
+                            'rgba(220, 53, 69, 0.8)',
+                            'rgba(40, 167, 69, 0.8)'
+                        ],
+                        borderColor: [
+                            '#dc3545',
+                            '#28a745'
+                        ],
+                        borderWidth: 3,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 14,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: '#667eea',
+                            borderWidth: 1
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        }
+
+        // Create line chart
+        function createLineChart() {
+            const ctx = document.getElementById('lineChart').getContext('2d');
+            
+            // Sort transactions by date and create cumulative data
+            const sortedTransactions = [...transactionsData].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const labels = [];
+            const fraudAmounts = [];
+            const legitAmounts = [];
+            
+            sortedTransactions.forEach((transaction, index) => {
+                labels.push(`T${index + 1}`);
+                if (transaction.status === 'Fraud') {
+                    fraudAmounts.push(transaction.amount);
+                    legitAmounts.push(0);
+                } else {
+                    legitAmounts.push(transaction.amount);
+                    fraudAmounts.push(0);
+                }
+            });
+            
+            if (lineChartInstance) lineChartInstance.destroy();
+            
+            lineChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Fraudulent Amounts',
+                        data: fraudAmounts,
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#dc3545',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }, {
+                        label: 'Legitimate Amounts',
+                        data: legitAmounts,
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#28a745',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create bar chart
+        function createBarChart() {
+            const ctx = document.getElementById('barChart').getContext('2d');
+            
+            // Group by merchant with fraud/legit breakdown
+            const merchantData = {};
+            transactionsData.forEach(transaction => {
+                if (!merchantData[transaction.merchant]) {
+                    merchantData[transaction.merchant] = { fraud: 0, legit: 0 };
+                }
+                if (transaction.status === 'Fraud') {
+                    merchantData[transaction.merchant].fraud += transaction.amount;
+                } else {
+                    merchantData[transaction.merchant].legit += transaction.amount;
+                }
+            });
+            
+            // Get top 6 merchants by total amount
+            const sortedMerchants = Object.entries(merchantData)
+                .map(([merchant, data]) => [merchant, data.fraud + data.legit, data])
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 6);
+            
+            if (barChartInstance) barChartInstance.destroy();
+            
+            barChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedMerchants.map(([merchant]) => 
+                        merchant.length > 15 ? merchant.substring(0, 15) + '...' : merchant
+                    ),
+                    datasets: [{
+                        label: 'Fraudulent',
+                        data: sortedMerchants.map(([, , data]) => data.fraud),
+                        backgroundColor: 'rgba(220, 53, 69, 0.8)',
+                        borderColor: '#dc3545',
+                        borderWidth: 2
+                    }, {
+                        label: 'Legitimate',
+                        data: sortedMerchants.map(([, , data]) => data.legit),
+                        backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                        borderColor: '#28a745',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ₹' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            stacked: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: {
+                            stacked: true,
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('fraudscan_token');
+                localStorage.removeItem('fraudscan_user');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Drag and drop functionality
+        const uploadArea = document.querySelector('.upload-area');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                selectedFile = files[0];
+                document.getElementById('fileInput').files = files;
+                document.getElementById('uploadBtn').disabled = false;
+                document.querySelector('.upload-text').textContent = `Selected: ${files[0].name}`;
+                document.querySelector('.upload-subtext').textContent = `Size: ${(files[0].size / 1024 / 1024).toFixed(2)} MB`;
+            }
+        });
+
+        // Create risk chart
+        function createRiskChart() {
+            const ctx = document.getElementById('riskChart').getContext('2d');
+            
+            const riskData = { Low: 0, Medium: 0, High: 0 };
+            transactionsData.forEach(transaction => {
+                const score = transaction.fraudScore || 0;
+                if (score >= 75) riskData.High++;
+                else if (score >= 50) riskData.Medium++;
+                else riskData.Low++;
+            });
+            
+            if (riskChartInstance) riskChartInstance.destroy();
+            
+            riskChartInstance = new Chart(ctx, {
+                type: 'polarArea',
+                data: {
+                    labels: ['Low Risk', 'Medium Risk', 'High Risk'],
+                    datasets: [{
+                        data: [riskData.Low, riskData.Medium, riskData.High],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.7)',
+                            'rgba(255, 193, 7, 0.7)',
+                            'rgba(220, 53, 69, 0.7)'
+                        ],
+                        borderColor: [
+                            '#28a745',
+                            '#ffc107',
+                            '#dc3545'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white'
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
