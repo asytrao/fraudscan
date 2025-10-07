@@ -54,9 +54,23 @@ const users = [
         id: 1,
         email: 'admin@fraudscan.com',
         password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-        name: 'Admin User'
+        name: 'Admin User',
+        isAdmin: true,
+        registrationDate: '2024-01-01',
+        lastActivity: new Date().toISOString(),
+        scansCount: 0
     }
 ];
+
+// User activity tracking
+const userActivity = {
+    totalScans: 0,
+    fraudDetected: 0,
+    registrationTrend: {
+        labels: [],
+        data: []
+    }
+};
 
 // JWT Secret (in production, use environment variable)
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -285,7 +299,11 @@ app.post('/api/register', async (req, res) => {
             id: users.length + 1,
             name,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            isAdmin: false,
+            registrationDate: new Date().toISOString().split('T')[0],
+            lastActivity: new Date().toISOString(),
+            scansCount: 0
         };
 
         users.push(newUser);
@@ -327,8 +345,11 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
+        // Update last activity
+        user.lastActivity = new Date().toISOString();
+
         const token = jwt.sign(
-            { id: user.id, email: user.email },
+            { id: user.id, email: user.email, isAdmin: user.isAdmin },
             JWT_SECRET,
             { expiresIn: '24h' }
         );
@@ -338,12 +359,66 @@ app.post('/api/login', async (req, res) => {
             user: {
                 id: user.id,
                 email: user.email,
-                name: user.name
+                name: user.name,
+                isAdmin: user.isAdmin
             }
         });
     } catch (error) {
         res.status(500).json({ error: 'Server error' });
     }
+});
+
+// Admin middleware
+const requireAdmin = (req, res, next) => {
+    if (!req.user.isAdmin) {
+        return res.status(403).json({ error: 'Admin access required' });
+    }
+    next();
+};
+
+// Admin stats endpoint
+app.get('/api/admin/stats', authenticateToken, requireAdmin, (req, res) => {
+    const now = new Date();
+    const last7Days = [];
+    const registrationCounts = [];
+    
+    // Generate last 7 days labels
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        last7Days.push(dateStr);
+        
+        // Count registrations for this day
+        const count = users.filter(u => u.registrationDate === dateStr).length;
+        registrationCounts.push(count);
+    }
+    
+    const stats = {
+        totalUsers: users.length,
+        activeUsers: users.filter(u => {
+            const lastActivity = new Date(u.lastActivity);
+            const daysDiff = (now - lastActivity) / (1000 * 60 * 60 * 24);
+            return daysDiff <= 7;
+        }).length,
+        totalScans: userActivity.totalScans,
+        fraudDetected: userActivity.fraudDetected,
+        users: users.map(u => ({
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            registrationDate: u.registrationDate,
+            lastActivity: u.lastActivity ? new Date(u.lastActivity).toLocaleDateString() : 'Never',
+            scansCount: u.scansCount || 0,
+            isActive: u.lastActivity ? (now - new Date(u.lastActivity)) / (1000 * 60 * 60 * 24) <= 7 : false
+        })),
+        registrationTrend: {
+            labels: last7Days.map(date => new Date(date).toLocaleDateString()),
+            data: registrationCounts
+        }
+    };
+    
+    res.json(stats);
 });
 
 // File upload endpoint
@@ -374,6 +449,29 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
                 riskLevel: fraudAnalysis.riskLevel
             };
         });
+
+        // Update user activity tracking
+        userActivity.totalScans += 1;
+        const fraudCount = analyzedTransactions.filter(t => t.status === 'Fraud').length;
+        if (fraudCount > 0) {
+            userActivity.fraudDetected += 1;
+        }
+        
+        // Update user scan count if authenticated
+        const authHeader = req.headers['authorization'];
+        if (authHeader) {
+            try {
+                const token = authHeader.split(' ')[1];
+                const decoded = jwt.verify(token, JWT_SECRET);
+                const user = users.find(u => u.id === decoded.id);
+                if (user) {
+                    user.scansCount = (user.scansCount || 0) + 1;
+                    user.lastActivity = new Date().toISOString();
+                }
+            } catch (err) {
+                // Token invalid, continue without updating user stats
+            }
+        }
 
         // Clean up uploaded file
         fs.unlinkSync(filePath);
@@ -482,6 +580,10 @@ app.get('/dashboard', (req, res) => {
 
 app.get('/register', (req, res) => {
     res.sendFile(path.join(__dirname, 'register.html'));
+});
+
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
 // Error handling middleware

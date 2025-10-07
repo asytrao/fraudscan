@@ -222,15 +222,19 @@
                 
                 if (response.ok) {
                     // Store token in localStorage
-                    localStorage.setItem('fraudscan_token', data.token);
-                    localStorage.setItem('fraudscan_user', JSON.stringify(data.user));
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
                     
                     successMessage.textContent = 'Account created successfully! Redirecting...';
                     successMessage.style.display = 'block';
                     
-                    // Redirect to dashboard
+                    // Redirect based on user role
                     setTimeout(() => {
-                        window.location.href = 'dashboard.html';
+                        if (data.user.isAdmin) {
+                            window.location.href = 'admin.html';
+                        } else {
+                            window.location.href = 'dashboard.html';
+                        }
                     }, 1500);
                 } else {
                     errorMessage.textContent = data.error || 'Registration failed';
@@ -246,8 +250,14 @@
         });
 
         // Check if already logged in
-        if (localStorage.getItem('fraudscan_token')) {
-            window.location.href = 'dashboard.html';
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (token) {
+            if (user.isAdmin) {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'dashboard.html';
+            }
         }
     </script>
 </body>
